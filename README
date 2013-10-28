@@ -1,0 +1,164 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="content-type" content="text/html" />
+	<meta name="author" content="Vitalian" />
+    <script src="jquery-1.10.2.min.js"></script>
+	<title>Неназванный 1</title>
+    <!-- Latest compiled and minified CSS -->
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css" />
+    
+    <!-- Latest compiled and minified JavaScript -->
+    <script src="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/js/bootstrap.min.js"></script>
+    
+    <!-- NProgress -->
+    <script src="http://ricostacruz.com/nprogress/nprogress.js"></script>
+    <link href="http://ricostacruz.com/nprogress/nprogress.css" rel="stylesheet" type="text/css" />
+    
+    <style type="text/css">
+    @import "http://webfonts.ru/import/ptsans.css";
+    
+    body {
+        font-family: 'PT Sans';
+        font-weight: bold;
+        font-style: normal;
+        font-size: 14px;
+    }
+    </style>
+</head>
+
+<body>
+
+    
+<form enctype="text/plain">
+<div style="width: 300px; margin: 50px auto;">
+
+    <div class="btn-group btn-group-justified">
+      <a class="btn btn-primary" id="metres" >Метры</a>
+      <a class="btn btn-primary" id="units" >Штуки</a>
+    </div>
+      
+    <br />
+    <div class="input-group input-group-sm" style="width:300px;">
+<!--
+      <input type="text" class="form-control" width="300px" size="10" id="maininput" value="1"/>
+-->
+    <input type="text" class="form-control" width="300px" size="10" id="kolvo" value="1"/>
+    <input type="hidden" class="form-control" width="300px" size="10" id="unit" value="1"/>
+      <span class="input-group-btn">
+            <button class="btn btn-default" type="button" id="kolvo_m">‹</button>
+            <button class="btn btn-default" type="button" id="kolvo_b">›</button>
+      </span>
+    </div>
+<!--
+    <div class="input-group input-group-sm" style="width:300px;">
+      <input type="text" class="form-control" width="300px" size="10" id="unit" value="1"/>
+      <span class="input-group-addon">шт.</span>
+    </div>
+    <div class="input-group input-group-sm" style="width:300px;">
+      <input type="text" class="form-control" width="300px" size="10" id="kolvo" value="1"/>
+    </div>
+-->
+    <br />
+    <!--
+    <input type="text" size="10" id="kolvo" value="1"/><input type="text" size="10" id="unit" value=""/><input type="button" id="kolvo_b" value="+"/><input type="button" id="kolvo_m" value="-"/><br/>
+    -->
+    Цена за количество метров <span></span> руб <br/>
+    <button type="button" class="btn btn-warning btn-sm" id="preserve">Запас 10%</button>
+    <input type="hidden" value="0.1089" id="kratnost"/><br/>
+    <input type="hidden" value="1080" id="price"/><br/>
+    <input type="hidden" value="1" id="unit" /><br/>
+    <input type="hidden" value="1" id="kolvo" /><br/>
+    <!--
+    Количество в плитках <span></span><br/>
+    -->
+</div>
+</form>
+
+</body>
+
+    <script type="text/javascript">
+
+    $(document).ready(function(){
+        // Фича
+        NProgress.start();
+        NProgress.done();
+        
+        // глобальные переменные
+        var kratnost = $("#kratnost").val();
+        var kolvo = $("#kolvo").val();
+        var price = $("#price").val();
+        
+        $("#metres").addClass('active');
+        
+        $("#kolvo").on('mouseout',function(){ // раньше включали по действию change
+                     var kolvo = ($(this).val()).replace(",", ".");
+                     var result0 = Math.round(kolvo / kratnost).toFixed();
+                     var result = (result0 * kratnost).toFixed(4);
+                     $("#kolvo").val(result).attr("value",result);
+                     sq2un(result,kratnost);
+                     sq2price(result);
+        });
+        
+
+         $("#unit").on('mouseout',function(){ // раньше включали по действию change
+                      var unit = Math.round($("#unit").val());
+                      $("#unit").val(unit).attr("value",unit);
+                      
+                      $("#kolvo").val(parseFloat(unit*kratnost)).attr("value",parseFloat(unit*kratnost));
+                      sq2price($("#kolvo").val());
+                      
+         });
+
+
+        $("#kolvo_b").click(function(){
+                    var res = (parseFloat($("#kolvo").val()) + parseFloat(kratnost)).toFixed(4);
+                    $("#kolvo").val(res).attr("value",res);
+                    sq2un(res,kratnost);
+                    sq2price(res);
+       });
+       
+       
+       $("#kolvo_m").click(function(){
+                    if ($("#kolvo").val() > 0) {
+                    var res = (parseFloat($("#kolvo").val()) - parseFloat(kratnost)).toFixed(4);
+                    $("#kolvo").val(res).attr("value",res);
+                    sq2un(res,kratnost);
+                    sq2price(res);
+                    }
+                    else {$("#kolvo").val(0).attr("value",0);}
+       });
+       
+       function sq2un(res,krat){
+                    $("#unit").val(Math.round(res/krat).toFixed()).attr("value",Math.round(res/krat));
+                    $("#unit").focus();
+       }
+       function sq2price(sq){
+                    $("span:last").text((sq*price).toFixed(2));
+       }
+       $("#preserve").click(function(){
+                    var res = parseFloat($("#kolvo").val())+(parseFloat($("#kolvo").val())*0.1);
+                    $("#kolvo").val(res.toFixed(4)).attr("value",res.toFixed(4));
+                    sq2un(res,kratnost);
+                    sq2price(res);
+       });
+       
+       $("#metres").click(function(){
+                    $(this).addClass('active');
+                    $("#units").removeClass('active');
+                    $("#kolvo").attr("type","text");
+                    $("#unit").attr("type","hidden");
+                    
+       });
+       
+       $("#units").click(function(){
+                    $(this).addClass('active');
+                    $("#metres").removeClass('active');
+                    $("#unit").attr("type","text");
+                    $("#kolvo").attr("type","hidden");
+       });
+       
+                  
+    });
+    </script>
+</html>
